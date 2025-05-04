@@ -1,38 +1,34 @@
-program StockMarketTradingSystem;
-uses
-SysUtils;
-function AskQuestion(prompt: string): string;
+program SimpleExpertSystem;
+
+uses crt;
+
 var
-answer: string;
+  fever, cough, headache: char;
+
 begin
-Write(prompt + ' ');
-ReadLn(answer);
-AskQuestion := answer;
-end;
-function Evaluate(trend, fundamentals, indicators: string): boolean;
-begin
-Evaluate := (LowerCase(trend) = 'upwards') and
-(LowerCase(fundamentals) = 'strong') and
-(LowerCase(indicators) = 'positive');
-end;
-procedure PrintResult(shouldBuy: boolean);
-begin
-if shouldBuy then
-WriteLn('Recommendation: Buy the stock!')
-else
-WriteLn('Recommendation: Do not buy the stock.');
-end;
-var
-Trend, Fundamentals, Indicators: string;
-shouldBuy: boolean;
-begin
-WriteLn('Welcome to the Stock Market Trading System!');
-WriteLn('Please answer the following questions:');
-Trend := AskQuestion('What is the current market trend? (Upwards/Downwords):');
-Fundamentals := AskQuestion('How are the fundamentals of the company? (strong/
-weak):');
-Indicators := AskQuestion('What do the technical indicators suggest? (positive/
-negative):');
-shouldBuy := Evaluate(Trend, Fundamentals, Indicators);
-PrintResult(shouldBuy);
+  clrscr;
+  writeln('--- Simple Disease Expert System ---');
+  
+  write('Do you have fever? (y/n): ');
+  readln(fever);
+
+  write('Do you have cough? (y/n): ');
+  readln(cough);
+
+  write('Do you have headache? (y/n): ');
+  readln(headache);
+
+  writeln;
+  writeln('Diagnosis Result:');
+
+  if (fever = 'y') and (cough = 'y') then
+    writeln('You might have Flu.')
+  else if (fever = 'y') and (headache = 'y') then
+    writeln('You might have Malaria.')
+  else if (cough = 'y') and (headache = 'y') then
+    writeln('You might have Common Cold.')
+  else
+    writeln('No matching disease found.');
+
+  readln;
 end.
