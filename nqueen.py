@@ -1,56 +1,117 @@
-class NQueens:
-    def __init__(self, N):
-        self.N = N
-        self.board = [[0] * N for _ in range(N)]
-        self.column = [False] * N
-        self.diagonal1 = [False] * (2 * N - 1)
-        self.diagonal2 = [False] * (2 * N - 1)
+# Function to print the board
+def print_solution(board):
+    for row in board:
+        for col in row:
+            if col == 1:
+                print("Q", end=" ")
+            else:
+                print(".", end=" ")
+        print()
+    print()
 
-    def solve(self, row=0):
-        if row == self.N:
-            self.print_solution()
-            return True  # Return true to get one solution only
-
-        for col in range(self.N):
-            if not self.is_safe(row, col):
-                continue
-
-            self.place_queen(row, col)
-            if self.solve(row + 1):
-                return True
-            self.remove_queen(row, col)
-
+# ---------- Optimized Backtracking (with arrays) ----------
+def is_safe(row, col, slash_diagonal, backslash_diagonal, columns, n):
+    if slash_diagonal[row + col] or backslash_diagonal[row - col + n - 1] or columns[col]:
         return False
+    return True
 
-    def is_safe(self, row, col):
-        return not (self.column[col] or
-                    self.diagonal1[row - col + self.N - 1] or
-                    self.diagonal2[row + col])
+def solve_n_queens_optimized_util(board, row, slash_diagonal, backslash_diagonal, columns, solutions, n):
+    if row == n:
+        solution = [r[:] for r in board]
+        solutions.append(solution)
+        return
 
-    def place_queen(self, row, col):
-        self.board[row][col] = 1
-        self.column[col] = True
-        self.diagonal1[row - col + self.N - 1] = True
-        self.diagonal2[row + col] = True
+    for col in range(n):
+        if is_safe(row, col, slash_diagonal, backslash_diagonal, columns, n):
+            board[row][col] = 1
+            columns[col] = slash_diagonal[row + col] = backslash_diagonal[row - col + n - 1] = True
 
-    def remove_queen(self, row, col):
-        self.board[row][col] = 0
-        self.column[col] = False
-        self.diagonal1[row - col + self.N - 1] = False
-        self.diagonal2[row + col] = False
+            solve_n_queens_optimized_util(board, row + 1, slash_diagonal, backslash_diagonal, columns, solutions, n)
 
-    def print_solution(self):
-        print(f"\nSolution for N = {self.N}")
-        print("Board layout:\n")
-        for row in self.board:
-            print(" ".join("Q" if col else "." for col in row))
-        print("\nQ = Queen, . = Empty Square\n")
+            board[row][col] = 0
+            columns[col] = slash_diagonal[row + col] = backslash_diagonal[row - col + n - 1] = False
 
-if __name__ == "__main__":
-    try:
-        N = int(input("Enter the size of the board (N): "))
-        solver = NQueens(N)
-        if not solver.solve():
-            print(f"No solution exists for N = {N}")
-    except ValueError:
-        print("Please enter a valid integer.")
+def solve_n_queens_optimized(n):
+    board = [[0 for _ in range(n)] for _ in range(n)]
+    columns = [False] * n
+    slash_diagonal = [False] * (2 * n - 1)
+    backslash_diagonal = [False] * (2 * n - 1)
+    solutions = []
+    solve_n_queens_optimized_util(board, 0, slash_diagonal, backslash_diagonal, columns, solutions, n)
+    return solutions
+
+# ---------- Normal Backtracking (basic safety checks) ----------
+def is_safe_basic(board, row, col, n):
+    # Check same column
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    # Check upper-left diagonal
+    i, j = row - 1, col - 1
+    while i >= 0 and j >= 0:
+        if board[i][j] == 1:
+            return False
+        i -= 1
+        j -= 1
+
+    # Check upper-right diagonal
+    i, j = row - 1, col + 1
+    while i >= 0 and j < n:
+        if board[i][j] == 1:
+            return False
+        i -= 1
+        j += 1
+
+    return True
+
+# Recursive function to solve N-Queens using normal backtracking
+def solve_n_queens_basic_util(board, row, solutions, n):
+    if row == n:
+        # Create a deep copy of the board to store as a solution
+        solution = []
+        for i in range(n):
+            new_row = []
+            for j in range(n):
+                new_row.append(board[i][j])
+            solution.append(new_row)
+        solutions.append(solution)
+        return
+
+    # Try placing a queen in each column of the current row
+    for col in range(n):
+        if is_safe_basic(board, row, col, n):
+            board[row][col] = 1  # Place queen
+            solve_n_queens_basic_util(board, row + 1, solutions, n)
+            board[row][col] = 0  # Backtrack
+
+# Main function to initialize the board and call the recursive utility
+def solve_n_queens_basic(n):
+    board = []
+    for i in range(n):
+        row = []
+        for j in range(n):
+            row.append(0)
+        board.append(row)
+
+    solutions = []
+    solve_n_queens_basic_util(board, 0, solutions, n)
+    return solutions
+
+
+# ------------------- MAIN -------------------
+n = 4
+
+# Optimized version
+print("Optimized Backtracking (with lookup arrays):")
+solutions_optimized = solve_n_queens_optimized(n)
+print("Total solutions:", len(solutions_optimized))
+for sol in solutions_optimized:
+    print_solution(sol)
+
+# Basic version
+print("Basic Backtracking (no extra arrays):")
+solutions_basic = solve_n_queens_basic(n)
+print("Total solutions:", len(solutions_basic))
+for sol in solutions_basic:
+    print_solution(sol)
